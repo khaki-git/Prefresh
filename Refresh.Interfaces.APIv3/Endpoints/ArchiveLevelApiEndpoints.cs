@@ -10,6 +10,7 @@ using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
