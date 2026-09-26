@@ -30,7 +30,7 @@ public sealed class ArchiveLevelCatalog
 
     public IReadOnlyList<ArchiveLevelRecord> Search(string query, int limit = 30)
     {
-        if (!this.IsAvailable || string.IsNullOrWhiteSpace(query))
+        if (!this.IsAvailable || query.Trim().Length < 3)
             return [];
 
         using SqliteConnection connection = this.Open();
@@ -41,7 +41,6 @@ public sealed class ArchiveLevelCatalog
             WHERE rootLevel IS NOT NULL AND length(rootLevel) = 20
               AND (instr(lower(name), lower($query)) > 0
                    OR instr(lower(npHandle), lower($query)) > 0)
-            ORDER BY heartCount DESC
             LIMIT $limit
             """;
         command.Parameters.AddWithValue("$query", query.Trim());
