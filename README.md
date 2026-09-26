@@ -51,11 +51,12 @@ The Docker Compose setup connects to the [2023 dry archive](https://archive.org/
 {
   "Enabled": true,
   "RemoteEnabled": true,
-  "RemoteBaseUrl": "https://archive.org/download/"
+  "RemoteBaseUrl": "https://archive.org/download/",
+  "MetadataPath": "/var/dry/dry.db"
 }
 ```
 
-The server first checks the local `Location` for each resource and then fetches missing SHA-1 assets from the archive's `dry23r*` bundles. Frequently requested assets are cached in the writable server data store. Players can use the existing `POST /api/v3/levels/hash/{hash}/setAsOverride` route with an archive root hash to open a level in game. This connection serves resources by hash; browsing the archive's `dry.db` metadata is not yet integrated into level search.
+The server first checks the local `Location` for each resource and then fetches missing SHA-1 assets from the archive's `dry23r*` bundles. Frequently requested assets are cached in the writable server data store. Download `dry.db` from the 2023 archive item and place it at `data/archive/dry.db` for Docker Compose, or set `MetadataPath` to its location on another installation. The read-only `GET /api/v3/archive/levels/search/{query}` route then searches titles and creator names. An authenticated `POST /api/v3/archive/levels/{id}/play` opens a result in the connected game. The existing `POST /api/v3/levels/hash/{hash}/setAsOverride` route also opens a level when its root hash is known. Archive search is exposed through the API; the in-game search screen is not yet connected to this catalog.
 
 Levels marked as reuploads or with `[archive]` or `(archive)` in the title are offered to the game as unlocked and copyable. Authenticated users can also create an independently owned copy with `POST /api/v3/levels/id/{id}/fork` while user-made levels are enabled. The archived original retains its publisher and attribution.
 
