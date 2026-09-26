@@ -31,10 +31,9 @@ Anyway, with the legal disclaimers out of the way...
 To update, you can simply repeat this process, overwriting the previous files.
 
 #### Using Docker (compose) 
-1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) or checkout the source code 
-1. Install Docker if not already installed 
-1. Verify that the container works with your shell attached: `docker compose up` 
-1. If Refresh starts successfully, start the docker container in the background: `docker compose up --detach` 
+1. Check out this repository and install Docker with Compose.
+1. Run `docker compose up --build -d` from the repository directory. Compose starts both PostgreSQL and the game server and keeps their data in persistent volumes.
+1. Check `docker compose logs -f gameserver` and `http://localhost:10061/_health` before connecting a patched game client.
 
 To update, you simply run a `git pull` to pull the latest changes,
 and then run `docker compose up --build` to rebuild the image.
@@ -46,7 +45,7 @@ Once you've downloaded the artifact, browse to your data folder and create a fol
 
 `AllowUserMadeLevels` in `refreshGameServer.json` defaults to `true`. Set it to `false` to stop new level publishing and republishing. Existing levels remain playable. This is a server setting; refresh-web is a separate project.
 
-To connect the [2023 dry archive](https://archive.org/details/dry23db), enable the archive in `dry.json`:
+The Docker Compose setup connects to the [2023 dry archive](https://archive.org/details/dry23db) on a fresh installation. It sets `PREFRESH_DRY_ARCHIVE_ENABLED=true` when the initial `dry.json` is created. An existing `dry.json` with `Enabled: false` keeps that setting until changed. Its relevant options are:
 
 ```json
 {
