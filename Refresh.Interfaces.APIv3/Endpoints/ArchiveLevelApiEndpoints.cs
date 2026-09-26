@@ -6,6 +6,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Core.Configuration;
 using Refresh.Core.Services;
 using Refresh.Core.Storage;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
