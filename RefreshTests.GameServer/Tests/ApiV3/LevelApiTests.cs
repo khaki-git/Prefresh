@@ -86,6 +86,45 @@ public class LevelApiTests : GameServerTest
         Assert.That(levelResponse!.Data, Is.Not.Null);
         Assert.That(levelResponse.Data!.LevelId, Is.EqualTo(level.LevelId));
     }
+
+    [Test]
+    public void CanForkArchivedLevelWithoutChangingOriginalOwnership()
+    {
+        using TestContext context = this.GetServer();
+        GameUser originalPublisher = context.CreateUser();
+        GameUser forkingUser = context.CreateUser();
+        GameLevel archivedLevel = context.CreateLevel(originalPublisher, "Archived level [archive]", "An archived level");
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, forkingUser);
+        ApiResponse<ApiGameLevelResponse>? response = client.PostData<ApiGameLevelResponse>(
+            $"/api/v3/levels/id/{archivedLevel.LevelId}/fork", new { });
+
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response!.Data!.LevelId, Is.Not.EqualTo(archivedLevel.LevelId));
+            Assert.That(response.Data.Publisher?.UserId, Is.EqualTo(forkingUser.UserId.ToString()));
+            Assert.That(response.Data.RootLevelHash, Is.EqualTo(archivedLevel.RootResource));
+            Assert.That(response.Data.IsCopyable, Is.True);
+            Assert.That(context.Database.GetLevelById(archivedLevel.LevelId)?.PublisherUserId, Is.EqualTo(originalPublisher.UserId));
+        });
+    }
+
+    [Test]
+    public void CannotForkUnmarkedLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser originalPublisher = context.CreateUser();
+        GameUser forkingUser = context.CreateUser();
+        GameLevel level = context.CreateLevel(originalPublisher);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, forkingUser);
+        ApiResponse<ApiGameLevelResponse>? response = client.PostData<ApiGameLevelResponse>(
+            $"/api/v3/levels/id/{level.LevelId}/fork", new { }, false, true);
+
+        Assert.That(response?.Data, Is.Null);
+        Assert.That(context.Database.GetLevelById(level.LevelId)?.PublisherUserId, Is.EqualTo(originalPublisher.UserId));
+    }
     
     [Test]
     public void DoesntGetLevelByInvalidId()

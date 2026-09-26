@@ -42,6 +42,14 @@ and then run `docker compose up --build` to rebuild the image.
 If you would like refresh-web, head to [here](https://github.com/LittleBigRefresh/refresh-web/actions) to view the latest artifacts, then grab them.
 Once you've downloaded the artifact, browse to your data folder and create a folder called 'web' and extract the zip you've just downloaded to that folder.
 
+### Archived and user-made levels
+
+`AllowUserMadeLevels` in `refreshGameServer.json` defaults to `true`. Set it to `false` to stop new level publishing and republishing. Existing levels remain playable. This is a server setting; refresh-web is a separate project.
+
+Levels marked as reuploads or with `[archive]` or `(archive)` in the title are offered to the game as unlocked and copyable. Authenticated users can also create an independently owned copy with `POST /api/v3/levels/id/{id}/fork` while user-made levels are enabled. The archived original retains its publisher and attribution.
+
+The level copy flag does not alter sharing restrictions inside LittleBigPlanet's prize item assets. Those assets require separate format-aware processing before copy-locked goodies can be reused freely.
+
 ## &#128293; It's on fire! What do I do? 
 Refresh isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/Refresh/issues/new/choose) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support. 
 

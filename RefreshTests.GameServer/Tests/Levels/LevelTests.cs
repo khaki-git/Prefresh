@@ -12,6 +12,30 @@ namespace RefreshTests.GameServer.Tests.Levels;
 public class LevelTests : GameServerTest
 {
     [Test]
+    public void ArchivedLevelsAreCopyableAndUnlockedInGame()
+    {
+        using TestContext context = this.GetServer();
+        GameUser publisher = context.CreateUser();
+        GameUser player = context.CreateUser();
+        GameLevel archived = context.CreateLevel(publisher, "Archived level [archive]");
+        archived.IsCopyable = false;
+        archived.IsLocked = true;
+        context.Database.SaveChanges();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, player);
+        HttpResponseMessage message = client.GetAsync($"/lbp/s/user/{archived.LevelId}").Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.IsCopyable, Is.EqualTo(1));
+            Assert.That(response.IsLocked, Is.False);
+            Assert.That(context.Database.GetLevelById(archived.LevelId)?.IsCopyable, Is.False);
+        });
+    }
+
+    [Test]
     public void SlotsNewest()
     {
         using TestContext context = this.GetServer();

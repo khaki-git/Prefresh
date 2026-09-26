@@ -79,6 +79,71 @@ public partial class GameDatabaseContext // Levels
         return level;
     }
 
+    public GameLevel? ForkArchivedLevel(GameLevel source, GameUser publisher)
+    {
+        if (source.StoryId != 0 || !source.IsArchived)
+            return null;
+
+        string forkPrefix = "Fork of ";
+        string forkTitle = string.Concat(forkPrefix, source.Title);
+        if (forkTitle.Length > UgcLimits.TitleLimit)
+            forkTitle = forkTitle[..UgcLimits.TitleLimit];
+
+        string forkDescription = $"Forked from archived level {source.LevelId}.\n\n{source.Description}";
+        if (forkDescription.Length > UgcLimits.DescriptionLimit)
+            forkDescription = forkDescription[..UgcLimits.DescriptionLimit];
+
+        DateTimeOffset timestamp = this._time.Now;
+        GameLevel fork = new()
+        {
+            IsAdventure = source.IsAdventure,
+            Title = forkTitle,
+            IconHash = source.IconHash,
+            Description = forkDescription,
+            LocationX = 0,
+            LocationY = 0,
+            Labels = source.Labels.ToList(),
+            RootResource = source.RootResource,
+            PublishDate = timestamp,
+            UpdateDate = timestamp,
+            MinPlayers = source.MinPlayers,
+            MaxPlayers = source.MaxPlayers,
+            EnforceMinMaxPlayers = source.EnforceMinMaxPlayers,
+            SameScreenGame = source.SameScreenGame,
+            IsModded = source.IsModded,
+            BackgroundGuid = source.BackgroundGuid,
+            GameVersion = source.GameVersion,
+            LevelType = source.LevelType,
+            StoryId = 0,
+            IsLocked = false,
+            IsSubLevel = source.IsSubLevel,
+            IsCopyable = true,
+            RequiresMoveController = source.RequiresMoveController,
+            PublisherUserId = publisher.UserId,
+            Publisher = publisher,
+            OriginalPublisher = source.Publisher?.Username ?? source.OriginalPublisher,
+            IsReUpload = true,
+        };
+
+        this.GameLevels.Add(fork);
+        this.SaveChanges();
+
+        this.WriteEnsuringStatistics(publisher, () =>
+        {
+            this.GameLevelStatistics.Add(fork.Statistics = new GameLevelStatistics
+            {
+                LevelId = fork.LevelId,
+            });
+
+            this.CreateRevisionForLevel(fork, publisher);
+            publisher.Statistics!.LevelCount++;
+        });
+
+        IEnumerable<GameSkillReward> sourceRewards = this.GetSkillRewardsForLevel(source).ToList();
+        this.UpdateSkillRewardsForLevel(fork, sourceRewards);
+        return fork;
+    }
+
     public GameLevel GetStoryLevelById(int id)
     {
         GameLevel? level = this.GameLevelsIncluded
