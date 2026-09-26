@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using MongoDB.Bson;
+using Refresh.Common.Constants;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
@@ -94,6 +95,9 @@ public partial class GameLevel : ISequentialId
     public GameLevelStatistics? Statistics { get; set; }
 
     public bool IsReUpload { get; set; }
+
+    [NotMapped]
+    public bool IsArchived => this.IsReUpload || LevelPrefixes.IsArchiveTitle(this.Title);
 
     /// <summary>
     /// Calculates the average rating of a level based on the ratings it has.

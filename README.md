@@ -31,16 +31,36 @@ Anyway, with the legal disclaimers out of the way...
 To update, you can simply repeat this process, overwriting the previous files.
 
 #### Using Docker (compose) 
-1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) or checkout the source code 
-1. Install Docker if not already installed 
-1. Verify that the container works with your shell attached: `docker compose up` 
-1. If Refresh starts successfully, start the docker container in the background: `docker compose up --detach` 
+1. Check out this repository and install Docker with Compose.
+1. Run `docker compose up --build -d` from the repository directory. Compose starts both PostgreSQL and the game server and keeps their data in persistent volumes.
+1. Check `docker compose logs -f gameserver` and `http://localhost:10061/_health` before connecting a patched game client.
 
 To update, you simply run a `git pull` to pull the latest changes,
 and then run `docker compose up --build` to rebuild the image.
 
 If you would like refresh-web, head to [here](https://github.com/LittleBigRefresh/refresh-web/actions) to view the latest artifacts, then grab them.
 Once you've downloaded the artifact, browse to your data folder and create a folder called 'web' and extract the zip you've just downloaded to that folder.
+
+### Archived and user-made levels
+
+`AllowUserMadeLevels` in `refreshGameServer.json` defaults to `true`. Set it to `false` to stop new level publishing and republishing. Existing levels remain playable. This is a server setting; refresh-web is a separate project.
+
+The Docker Compose setup connects to the [2023 dry archive](https://archive.org/details/dry23db) on a fresh installation. It sets `PREFRESH_DRY_ARCHIVE_ENABLED=true` when the initial `dry.json` is created. An existing `dry.json` with `Enabled: false` keeps that setting until changed. Its relevant options are:
+
+```json
+{
+  "Enabled": true,
+  "RemoteEnabled": true,
+  "RemoteBaseUrl": "https://archive.org/download/",
+  "MetadataPath": "/var/dry/dry.db"
+}
+```
+
+The server first checks the local `Location` for each resource and then fetches missing SHA-1 assets from the archive's `dry23r*` bundles. Frequently requested assets are cached in the writable server data store. Download `dry.db` from the 2023 archive item and place it at `data/archive/dry.db` for Docker Compose, or set `MetadataPath` to its location on another installation. The read-only `GET /api/v3/archive/levels/search/{query}` route then searches titles and creator names. An authenticated `POST /api/v3/archive/levels/{id}/play` opens a result in the connected game. The existing `POST /api/v3/levels/hash/{hash}/setAsOverride` route also opens a level when its root hash is known. Archive search is exposed through the API; the in-game search screen is not yet connected to this catalog.
+
+Levels marked as reuploads or with `[archive]` or `(archive)` in the title are offered to the game as unlocked and copyable. Authenticated users can also create an independently owned copy with `POST /api/v3/levels/id/{id}/fork` while user-made levels are enabled. The archived original retains its publisher and attribution.
+
+The level copy flag does not alter sharing restrictions inside LittleBigPlanet's prize item assets. Those assets require separate format-aware processing before copy-locked goodies can be reused freely.
 
 ## &#128293; It's on fire! What do I do? 
 Refresh isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/Refresh/issues/new/choose) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support. 

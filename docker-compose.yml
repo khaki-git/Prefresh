@@ -8,14 +8,33 @@ services:
       - "10061:10061"
     environment:
       BUNKUM_DATA_FOLDER: /refresh/data
+      POSTGRES_CONNECTION_STRING: Database=refresh;Username=refresh;Password=refresh;Host=db;Port=5432
+      PREFRESH_DRY_ARCHIVE_ENABLED: "true"
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      # Fails if the /_health endpoint contains 'Unhealthy'
-      test: ["CMD", "bash", "-c", "export UNHEALTHY=$(curl http://localhost:10061/_health --silent | grep -i Unhealthy); if [ '$UNHEALTHY' != '' ]; then exit 1; else exit 0; fi"]
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:10061/_health"]
       timeout: 3s
       interval: 5s
       retries: 5
     volumes:
       - "./data/gameserver:/refresh/data:z"
+      - "./data/archive:/var/dry:ro"
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: refresh
+      POSTGRES_USER: refresh
+      POSTGRES_PASSWORD: refresh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U refresh -d refresh"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
   presenceserver:
     image: refresh-presenceserver:latest
     container_name: refresh-presenceserver
@@ -31,3 +50,5 @@ services:
     volumes:
       - "./data/presenceserver:/refresh/data:z"
     profiles: ["optional-services"]
+volumes:
+  postgres-data:

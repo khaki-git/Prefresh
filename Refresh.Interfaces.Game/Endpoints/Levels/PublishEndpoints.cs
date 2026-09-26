@@ -123,11 +123,14 @@ public class PublishEndpoints : EndpointGroup
             }
 
             GameLevel? existingLevel = dataContext.Database.GetLevelByRootResource(body.RootResource);
-            // If all are true:
-            // - there is an existing level with this root hash
-            // - this isn't an update request
-            // then block the upload
-            if (existingLevel != null && body.LevelId != existingLevel.LevelId)
+            GameLevel? levelBeingUpdated = body.LevelId == 0 ? null : dataContext.Database.GetLevelById(body.LevelId);
+            bool isUpdatingOwnedCopyableReupload = levelBeingUpdated != null
+                && levelBeingUpdated.Publisher?.UserId == dataContext.User?.UserId
+                && levelBeingUpdated.IsReUpload
+                && levelBeingUpdated.IsCopyable
+                && levelBeingUpdated.RootResource == body.RootResource;
+            // reject duplicate root hashes unless the publisher is updating their own shareable reupload.
+            if (existingLevel != null && body.LevelId != existingLevel.LevelId && !isUpdatingOwnedCopyableReupload)
             {
                 dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.Title, dataContext.User!);
                 return Unauthorized;
@@ -190,6 +193,12 @@ public class PublishEndpoints : EndpointGroup
         AipiService? aipi,
         GameUser user)
     {
+        if (!config.AllowUserMadeLevels)
+        {
+            dataContext.Database.AddPublishFailNotification("This server has disabled user-made levels.", body.Title, user);
+            return Unauthorized;
+        }
+
         if (dataContext.User!.IsWriteBlocked(config))
         {
             dataContext.Database.AddPublishFailNotification($"The server is in read-only mode.", body.Title, dataContext.User!);
@@ -238,6 +247,12 @@ public class PublishEndpoints : EndpointGroup
         AipiService? aipi,
         GameServerConfig config)
     {
+        if (!config.AllowUserMadeLevels)
+        {
+            dataContext.Database.AddPublishFailNotification("This server has disabled user-made levels.", body.Title, user);
+            return Unauthorized;
+        }
+
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         

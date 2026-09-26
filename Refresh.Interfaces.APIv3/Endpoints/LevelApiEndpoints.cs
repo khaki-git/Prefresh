@@ -88,6 +88,32 @@ public class LevelApiEndpoints : EndpointGroup
         return ApiGameLevelResponse.FromOld(level, dataContext);
     }
 
+    [ApiV3Endpoint("levels/id/{id}/fork", HttpMethods.Post)]
+    [DocSummary("Creates an editable copy of an archived level")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForCreationWhen)]
+    [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.ReadOnlyErrorWhen)]
+    [RateLimitSettings(420, 8, 300, "level-fork-api")]
+    public ApiResponse<ApiGameLevelResponse> ForkArchivedLevel(RequestContext context, GameUser user,
+        [DocSummary("The ID of the archived level")] int id, DataContext dataContext, GameServerConfig config)
+    {
+        if (!config.AllowUserMadeLevels)
+            return ApiAuthenticationError.NoPermissionsForCreation;
+
+        if (user.IsWriteBlocked(config))
+            return ApiAuthenticationError.ReadOnlyError;
+
+        GameLevel? source = dataContext.Database.GetLevelById(id);
+        if (source == null)
+            return ApiNotFoundError.LevelMissingError;
+
+        GameLevel? fork = dataContext.Database.ForkArchivedLevel(source, user);
+        if (fork == null)
+            return new ApiValidationError("Only levels marked as archived can be forked.");
+
+        return ApiGameLevelResponse.FromOld(fork, dataContext);
+    }
+
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Delete)]
     [DocSummary("Deletes a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]

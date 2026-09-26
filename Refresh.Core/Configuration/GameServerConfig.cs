@@ -190,6 +190,10 @@ public class GameServerConfig : Config
     
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;
+    /// <summary>
+    /// whether users can publish or edit user-made levels.
+    /// </summary>
+    public bool AllowUserMadeLevels { get; set; } = true;
     public string InstanceName { get; set; } = "Refresh";
     public string InstanceDescription { get; set; } = "A server running Refresh!";
     public bool MaintenanceMode { get; set; } = false;

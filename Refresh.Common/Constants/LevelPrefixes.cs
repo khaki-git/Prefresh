@@ -34,4 +34,12 @@ public static partial class LevelPrefixes
         "(republish)", "[republish]",
         "(republished)", "[republished]",
     };
+
+    public static readonly string[] ArchiveKeywords = {
+        "(archive)", "[archive]",
+        "(archived)", "[archived]",
+    };
+
+    public static bool IsArchiveTitle(string title) => ArchiveKeywords.Any(keyword =>
+        title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
 }

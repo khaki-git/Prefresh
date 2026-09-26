@@ -32,6 +32,30 @@ public class PublishEndpointsTests : GameServerTest
         dataStore.WriteToStore(hash, data);
         return hash;
     }
+
+    [Test]
+    public void UserMadeLevelsCanBeDisabled()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        context.Server.Value.GameServerConfig.AllowUserMadeLevels = false;
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        GameLevelRequest level = new()
+        {
+            Title = "TEST LEVEL",
+            IconHash = "g719",
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+            RootResource = TEST_ASSET_HASH,
+        };
+
+        HttpResponseMessage response = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+
+        response = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+    }
     
     [Test]
     public void PublishLevel()

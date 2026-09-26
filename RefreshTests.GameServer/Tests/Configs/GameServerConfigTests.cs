@@ -6,6 +6,12 @@ namespace RefreshTests.GameServer.Tests.Configs;
 public class GameServerConfigTests : GameServerTest
 {
     [Test]
+    public void UserMadeLevelsAreEnabledByDefault()
+    {
+        Assert.That(new GameServerConfig().AllowUserMadeLevels, Is.True);
+    }
+
+    [Test]
     public void MigratesRolePermsFromVersion26()
     {
         TestGameServerConfig config = new()
