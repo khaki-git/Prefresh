@@ -15,6 +15,7 @@ public class DryArchiveConfig : Config
     public bool Enabled { get; set; } = string.Equals(Environment.GetEnvironmentVariable("PREFRESH_DRY_ARCHIVE_ENABLED"), "true", StringComparison.OrdinalIgnoreCase);
     public string Location { get; set; } = "/var/dry/";
     public bool UseFolderNames { get; set; } = true;
+    public string MetadataPath { get; set; } = "/var/dry/dry.db";
     public bool RemoteEnabled { get; set; } = true;
     public string RemoteBaseUrl { get; set; } = "https://archive.org/download/";
     
