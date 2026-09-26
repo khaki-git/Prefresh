@@ -15,6 +15,8 @@ public class DryArchiveConfig : Config
     public bool Enabled { get; set; }
     public string Location { get; set; } = "/var/dry/";
     public bool UseFolderNames { get; set; } = true;
+    public bool RemoteEnabled { get; set; } = true;
+    public string RemoteBaseUrl { get; set; } = "https://archive.org/download/";
     
 #if DEBUG
     // ReSharper disable once InconsistentNaming

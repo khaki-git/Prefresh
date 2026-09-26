@@ -46,6 +46,18 @@ Once you've downloaded the artifact, browse to your data folder and create a fol
 
 `AllowUserMadeLevels` in `refreshGameServer.json` defaults to `true`. Set it to `false` to stop new level publishing and republishing. Existing levels remain playable. This is a server setting; refresh-web is a separate project.
 
+To connect the [2023 dry archive](https://archive.org/details/dry23db), enable the archive in `dry.json`:
+
+```json
+{
+  "Enabled": true,
+  "RemoteEnabled": true,
+  "RemoteBaseUrl": "https://archive.org/download/"
+}
+```
+
+The server first checks the local `Location` for each resource and then fetches missing SHA-1 assets from the archive's `dry23r*` bundles. Frequently requested assets are cached in the writable server data store. Players can use the existing `POST /api/v3/levels/hash/{hash}/setAsOverride` route with an archive root hash to open a level in game. This connection serves resources by hash; browsing the archive's `dry.db` metadata is not yet integrated into level search.
+
 Levels marked as reuploads or with `[archive]` or `(archive)` in the title are offered to the game as unlocked and copyable. Authenticated users can also create an independently owned copy with `POST /api/v3/levels/id/{id}/fork` while user-made levels are enabled. The archived original retains its publisher and attribution.
 
 The level copy flag does not alter sharing restrictions inside LittleBigPlanet's prize item assets. Those assets require separate format-aware processing before copy-locked goodies can be reused freely.

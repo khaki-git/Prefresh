@@ -68,7 +68,11 @@ public class RefreshGameServer : RefreshServer
         }
         
         if (this._configStore.DryArchive.Enabled)
+        {
             dataStores.Add(new DownloadingDataStore(dataStore, new DryDataStore(this._configStore.DryArchive)));
+            if (this._configStore.DryArchive.RemoteEnabled)
+                dataStores.Add(new DownloadingDataStore(dataStore, new RemoteDryDataStore(this._configStore.DryArchive)));
+        }
 
         databaseProvider ??= () => new GameDatabaseProvider(this.Logger, this._configStore.Database);
         
